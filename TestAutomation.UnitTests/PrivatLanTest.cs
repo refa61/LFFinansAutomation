@@ -41,8 +41,10 @@ namespace TestAutomation.UnitTests.LanTest
         [AllureFeature("Ansök om Privatlån")]
         [AllureSeverity(SeverityLevel.critical)]
         [AllureTag("UI", "Selenium", "Smoke")]
+
         public void ApplyForPrivatlan()
         {
+            TestContext.WriteLine($"Testar CI/ CD");
             try
             {
                 homePage.OpenUrl();
