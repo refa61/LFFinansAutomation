@@ -1,0 +1,49 @@
+trigger:
+  - master
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  buildConfiguration: 'Release'
+
+steps:
+  - task: UseDotNet@2
+    inputs:
+      packageType: 'sdk'
+      version: '5.0.x'
+
+  - script: dotnet build TestAutomation.UnitTests/TestAutomation.UnitTests.csproj --configuration $(buildConfiguration)
+    displayName: 'Bygg projektet'
+
+  - script: dotnet test TestAutomation.UnitTests/TestAutomation.UnitTests.csproj --logger:"trx"
+    displayName: 'Kör tester'
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'VSTest'
+      testResultsFiles: '**/*.trx'
+      mergeTestResults: true
+      failTaskOnFailedTests: true
+
+  - task: PowerShell@2
+    displayName: 'Installera Allure CLI'
+    inputs:
+      targetType: 'inline'
+      script: |
+        npm install -g allure-commandline
+
+  - task: PowerShell@2
+    displayName: 'Generera Allure-rapport'
+    inputs:
+      targetType: 'inline'
+      script: |
+        allure generate $(System.DefaultWorkingDirectory)\TestAutomation.UnitTests\bin\$(buildConfiguration)\net5.0\allure-results --clean -o allure-report
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publicera rapport'
+    inputs:
+      PathtoPublish: 'allure-report'
+      ArtifactName: 'AllureReport'
+      publishLocation: 'Container'
+
