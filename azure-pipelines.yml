@@ -5,7 +5,6 @@ pool:
   name: LocalAgentPool-LF Finans
 
 variables:
-  GITHUB_TOKEN: $(GITHUB_TOKEN) # ⛳️ Pipeline variable, inte Library
   buildConfiguration: 'Release'
 
 steps:
@@ -65,7 +64,6 @@ steps:
     ArtifactName: 'AllureReport'
     publishLocation: 'Container'
 
-# 📢 Slutsteg: Publicera till GitHub Pages
 - task: PowerShell@2
   displayName: 'Publicera Allure-rapport till GitHub Pages'
   inputs:
@@ -75,16 +73,16 @@ steps:
       git config --global user.name "refa61"
 
       git clone https://$env:GITHUB_TOKEN@github.com/refa61/LFFinansAutomation.git gh-pages-temp
-      Set-Location gh-pages-temp
+      cd gh-pages-temp
 
       git checkout gh-pages 2>$null
       if ($LASTEXITCODE -ne 0) {
         git checkout --orphan gh-pages
-        git reset --hard
       }
 
       Remove-Item * -Recurse -Force -ErrorAction SilentlyContinue
       Copy-Item "$(Build.ArtifactStagingDirectory)\allure-report\*" -Destination . -Recurse
+
       git add .
       git commit -m "Uppdaterad Allure-rapport $(Build.BuildId)"
       git push origin gh-pages --force
