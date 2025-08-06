@@ -6,7 +6,8 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
-- group: GITHUB_TOKEN  # <- Importerar hemliga GitHub-token
+  # Lägg till gruppen korrekt indragen här:
+  - group: GITHUB_TOKEN
 
 steps:
   - task: UseDotNet@2
@@ -50,6 +51,8 @@ steps:
 
   - task: PowerShell@2
     displayName: 'Publicera till GitHub Pages'
+    env:
+      GITHUB_TOKEN: $(GITHUB_TOKEN)
     inputs:
       targetType: 'inline'
       script: |
