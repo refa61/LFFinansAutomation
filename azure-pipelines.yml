@@ -18,8 +18,8 @@ steps:
   - script: dotnet build TestAutomation.UnitTests/TestAutomation.UnitTests.csproj --configuration $(buildConfiguration)
     displayName: 'Bygg projektet'
 
-  - script: dotnet test TestAutomation.UnitTests/TestAutomation.UnitTests.csproj --logger:"trx" --results-directory:$(Build.ArtifactStagingDirectory)\TestResults --collect:"XPlat Code Coverage"
-    displayName: 'Kör tester'
+- script: dotnet test .\TestAutomation.UnitTests\TestAutomation.UnitTests.csproj --logger:"trx" --results-directory:"$(Build.ArtifactStagingDirectory)\TestResults" --collect:"XPlat Code Coverage"
+  displayName: 'Kör tester'
 
   - task: PublishTestResults@2
     inputs:
