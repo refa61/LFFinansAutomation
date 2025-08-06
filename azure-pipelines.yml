@@ -26,12 +26,13 @@ steps:
     mergeTestResults: true
     failTaskOnFailedTests: true
 
-# 🧪 Steg: Visa innehåll i allure-results
+# 🧪 Visa innehåll i allure-results före rapportgenerering
 - task: PowerShell@2
   displayName: 'Lista innehåll i allure-results'
   inputs:
     targetType: 'inline'
     script: |
+      Write-Host "Innehåll i allure-results:"
       Get-ChildItem -Path "$(System.DefaultWorkingDirectory)\TestAutomation.UnitTests\bin\$(buildConfiguration)\net5.0\allure-results" -Recurse
 
 - task: PowerShell@2
@@ -46,15 +47,16 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
+      $ErrorActionPreference = 'Stop'
       allure generate "$(System.DefaultWorkingDirectory)\TestAutomation.UnitTests\bin\$(buildConfiguration)\net5.0\allure-results" --clean -o "$(Build.ArtifactStagingDirectory)\allure-report"
-  errorActionPreference: 'stop'
 
-# 🧪 Steg: Visa innehåll i allure-report innan publicering
+# 🧪 Visa innehåll i allure-report innan publicering
 - task: PowerShell@2
   displayName: 'Visa innehåll i allure-report'
   inputs:
     targetType: 'inline'
     script: |
+      Write-Host "Innehåll i allure-report:"
       Get-ChildItem -Path "$(Build.ArtifactStagingDirectory)\allure-report" -Recurse
 
 - task: PublishBuildArtifacts@1
