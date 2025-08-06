@@ -2,11 +2,12 @@ trigger:
   - master
 
 pool:
-  name: 'LocalAgentPool-LF Finans'
+  name: LocalAgentPool-LF Finans
 
 variables:
-  buildConfiguration: 'Release'
-  - group: GITHUB_TOKEN  # Importera token-gruppen korrekt
+  - name: buildConfiguration
+    value: 'Release'
+  - group: GITHUB_TOKEN  # Importerar hemliga GitHub-token
 
 steps:
   - task: UseDotNet@2
@@ -14,10 +15,10 @@ steps:
       packageType: 'sdk'
       version: '5.0.x'
 
-  - script: dotnet build .\TestAutomation.UnitTests\TestAutomation.UnitTests.csproj --configuration $(buildConfiguration)
+  - script: dotnet build TestAutomation.UnitTests/TestAutomation.UnitTests.csproj --configuration $(buildConfiguration)
     displayName: 'Bygg projektet'
 
-  - script: dotnet test .\TestAutomation.UnitTests\TestAutomation.UnitTests.csproj --logger:"trx" --results-directory:"$(Build.ArtifactStagingDirectory)\TestResults" --collect:"XPlat Code Coverage"
+  - script: dotnet test TestAutomation.UnitTests/TestAutomation.UnitTests.csproj --logger:"trx" --results-directory:$(Build.ArtifactStagingDirectory)\TestResults --collect:"XPlat Code Coverage"
     displayName: 'Kör tester'
 
   - task: PublishTestResults@2
@@ -39,10 +40,10 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-        allure generate "$(Build.SourcesDirectory)\TestAutomation.UnitTests\bin\$(buildConfiguration)\net5.0\allure-results" --clean -o "$(Build.ArtifactStagingDirectory)\allure-report"
+        allure generate $(Build.SourcesDirectory)\TestAutomation.UnitTests\bin\$(buildConfiguration)\net5.0\allure-results --clean -o $(Build.ArtifactStagingDirectory)\allure-report
 
   - task: PublishBuildArtifacts@1
-    displayName: 'Publicera Allure-rapport som artifact'
+    displayName: 'Publicera Allure-rapport som artifact (valfritt)'
     inputs:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)\allure-report'
       ArtifactName: 'AllureReport'
@@ -50,8 +51,6 @@ steps:
 
   - task: PowerShell@2
     displayName: 'Publicera till GitHub Pages'
-    env:
-      GITHUB_TOKEN: $(GITHUB_TOKEN)
     inputs:
       targetType: 'inline'
       script: |
