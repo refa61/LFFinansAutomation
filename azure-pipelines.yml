@@ -5,26 +5,29 @@ pool:
   name: LocalAgentPool-LF Finans
 
 variables:
-  - name: buildConfiguration
-    value: 'Release'
-  - group: GITHUB_TOKEN  # Importerar hemliga GitHub-token
+  buildConfiguration: 'Release'
+  DOTNET_VERSION: '5.0.x'
+
+  # Grupp med GitHub-token (se till att gruppen är kopplad till pipen)
+- group: GITHUB_TOKEN
 
 steps:
   - task: UseDotNet@2
     inputs:
       packageType: 'sdk'
-      version: '5.0.x'
+      version: '$(DOTNET_VERSION)'
 
   - script: dotnet build TestAutomation.UnitTests/TestAutomation.UnitTests.csproj --configuration $(buildConfiguration)
     displayName: 'Bygg projektet'
 
-  - script: dotnet test "TestAutomation.UnitTests\TestAutomation.UnitTests.csproj" --logger:"trx" --results-directory:"$(Build.ArtifactStagingDirectory)\TestResults" --collect:"XPlat Code Coverage"
+  - script: dotnet test TestAutomation.UnitTests/TestAutomation.UnitTests.csproj --logger:"trx" --results-directory:$(Build.ArtifactStagingDirectory)/TestResults --collect:"XPlat Code Coverage"
     displayName: 'Kör tester'
 
   - task: PublishTestResults@2
+    displayName: 'Publicera testresultat'
     inputs:
       testResultsFormat: 'VSTest'
-      testResultsFiles: '**/*.trx'
+      testResultsFiles: '$(Build.ArtifactStagingDirectory)/TestResults/*.trx'
       mergeTestResults: true
       failTaskOnFailedTests: true
 
