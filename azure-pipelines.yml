@@ -5,9 +5,7 @@ pool:
   name: LocalAgentPool-LF Finans
 
 variables:
-  - group: GITHUB_TOKEN
-  - name: buildConfiguration
-    value: 'Release'
+  buildConfiguration: 'Release'
 
 steps:
 - task: UseDotNet@2
@@ -76,9 +74,16 @@ steps:
 
       git clone https://$env:GITHUB_TOKEN@github.com/refa61/LFFinansAutomation.git gh-pages-temp
       cd gh-pages-temp
-      git checkout gh-pages || git checkout --orphan gh-pages
+
+      if (-not (git rev-parse --verify gh-pages)) {
+        git checkout --orphan gh-pages
+      } else {
+        git checkout gh-pages
+      }
+
       Remove-Item * -Recurse -Force -ErrorAction SilentlyContinue
       Copy-Item "$(Build.ArtifactStagingDirectory)\allure-report\*" -Destination . -Recurse
+
       git add .
       git commit -m "Uppdaterad Allure-rapport $(Build.BuildId)"
       git push origin gh-pages --force
