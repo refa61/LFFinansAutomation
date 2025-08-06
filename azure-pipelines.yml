@@ -6,25 +6,27 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
-  DOTNET_VERSION: '5.0.x'
-  GITHUB_TOKEN: $(GITHUB_TOKEN)  # Importerat från Library -> Secrets
+
+# Importera GitHub-token från Library (utan att skapa cyklisk referens)
+- group: GITHUB_TOKEN
 
 steps:
   - task: UseDotNet@2
     inputs:
       packageType: 'sdk'
-      version: '$(DOTNET_VERSION)'
+      version: '5.0.x'
 
   - script: dotnet build TestAutomation.UnitTests/TestAutomation.UnitTests.csproj --configuration $(buildConfiguration)
     displayName: 'Bygg projektet'
 
-  - script: dotnet test TestAutomation.UnitTests/TestAutomation.UnitTests.csproj --logger:"trx" --results-directory:$(Build.ArtifactStagingDirectory)\TestResults --collect:"XPlat Code Coverage"
+  - script: dotnet test TestAutomation.UnitTests/TestAutomation.UnitTests.csproj --logger:"trx" --results-directory:"$(Build.ArtifactStagingDirectory)/TestResults" --collect:"XPlat Code Coverage"
     displayName: 'Kör tester'
 
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'VSTest'
       testResultsFiles: '**/*.trx'
+      searchFolder: '$(Build.ArtifactStagingDirectory)/TestResults'
       mergeTestResults: true
       failTaskOnFailedTests: true
 
@@ -40,12 +42,12 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-        allure generate $(Build.SourcesDirectory)\TestAutomation.UnitTests\bin\$(buildConfiguration)\net5.0\allure-results --clean -o $(Build.ArtifactStagingDirectory)\allure-report
+        allure generate "$(Build.SourcesDirectory)/TestAutomation.UnitTests/bin/$(buildConfiguration)/net5.0/allure-results" --clean -o "$(Build.ArtifactStagingDirectory)/allure-report"
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publicera Allure-rapport som artifact (valfritt)'
     inputs:
-      PathtoPublish: '$(Build.ArtifactStagingDirectory)\allure-report'
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)/allure-report'
       ArtifactName: 'AllureReport'
       publishLocation: 'Container'
 
@@ -54,13 +56,13 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-        git config --global user.email "rexaac@hotmail.com"
+        git config --global user.email "rezaac@hotmail.com"
         git config --global user.name "refa61"
         git clone https://$(GITHUB_TOKEN)@github.com/refa61/LFFinansAutomation.git gh-pages-temp
         cd gh-pages-temp
         git checkout gh-pages
         Remove-Item * -Recurse -Force
-        Copy-Item "$(Build.ArtifactStagingDirectory)\allure-report\*" -Destination "." -Recurse
+        Copy-Item "$(Build.ArtifactStagingDirectory)/allure-report/*" -Destination "." -Recurse
         git add .
         git commit -m "Uppdaterad Allure-rapport $(Build.BuildId)"
         git push origin gh-pages
