@@ -82,7 +82,7 @@ steps:
       git config --global user.email "rezaac@hotmail.com"
       git config --global user.name "refa61"
 
-      git clone https://$(GITHUB_PAT)@github.com/dittgithubnamn/LFFinansAutomation.git gh-pages-temp
+      git clone https://$(GITHUB_PAT)@github.com/ refa61/LFFinansAutomation.git gh-pages-temp
       cd gh-pages-temp
       git checkout gh-pages
 
