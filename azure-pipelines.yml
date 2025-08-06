@@ -8,17 +8,21 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
+# Installera rätt .NET SDK
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk'
     version: '5.0.x'
 
+# Bygg projektet
 - script: dotnet build TestAutomation.UnitTests/TestAutomation.UnitTests.csproj --configuration $(buildConfiguration)
   displayName: 'Bygg projektet'
 
+# Kör tester med TRX-logger
 - script: dotnet test TestAutomation.UnitTests/TestAutomation.UnitTests.csproj --logger:"trx"
   displayName: 'Kör tester'
 
+# Publicera testresultat
 - task: PublishTestResults@2
   inputs:
     testResultsFormat: 'VSTest'
@@ -26,15 +30,16 @@ steps:
     mergeTestResults: true
     failTaskOnFailedTests: true
 
-# 🧪 Visa innehåll i allure-results före rapportgenerering
+# Lista innehållet i allure-results för felsökning
 - task: PowerShell@2
-  displayName: 'Lista innehåll i allure-results'
+  displayName: 'Visa innehåll i allure-results'
   inputs:
     targetType: 'inline'
     script: |
       Write-Host "Innehåll i allure-results:"
       Get-ChildItem -Path "$(System.DefaultWorkingDirectory)\TestAutomation.UnitTests\bin\$(buildConfiguration)\net5.0\allure-results" -Recurse
 
+# Installera Allure CLI
 - task: PowerShell@2
   displayName: 'Installera Allure CLI'
   inputs:
@@ -42,6 +47,7 @@ steps:
     script: |
       npm install -g allure-commandline
 
+# Generera Allure-rapport
 - task: PowerShell@2
   displayName: 'Generera Allure-rapport'
   inputs:
@@ -50,7 +56,7 @@ steps:
       $ErrorActionPreference = 'Stop'
       allure generate "$(System.DefaultWorkingDirectory)\TestAutomation.UnitTests\bin\$(buildConfiguration)\net5.0\allure-results" --clean -o "$(Build.ArtifactStagingDirectory)\allure-report"
 
-# 🧪 Visa innehåll i allure-report innan publicering
+# Visa innehåll i rapportkatalogen före publicering
 - task: PowerShell@2
   displayName: 'Visa innehåll i allure-report'
   inputs:
@@ -59,9 +65,30 @@ steps:
       Write-Host "Innehåll i allure-report:"
       Get-ChildItem -Path "$(Build.ArtifactStagingDirectory)\allure-report" -Recurse
 
+# Publicera Allure-rapport som artifact (valfritt)
 - task: PublishBuildArtifacts@1
   displayName: 'Publicera Allure-rapport som artifact'
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)\allure-report'
     ArtifactName: 'AllureReport'
     publishLocation: 'Container'
+
+# 🔐 Publicera till GitHub Pages (kräver GITHUB_PAT som secret pipeline variable)
+- task: PowerShell@2
+  displayName: 'Publicera Allure-rapport till GitHub Pages'
+  inputs:
+    targetType: 'inline'
+    script: |
+      git config --global user.email "rezaac@hotmail.com"
+      git config --global user.name "refa61"
+
+      git clone https://$(GITHUB_PAT)@github.com/dittgithubnamn/LFFinansAutomation.git gh-pages-temp
+      cd gh-pages-temp
+      git checkout gh-pages
+
+      Remove-Item * -Recurse -Force
+      Copy-Item "$(Build.ArtifactStagingDirectory)\allure-report\*" -Destination "." -Recurse
+
+      git add .
+      git commit -m "Uppdaterad Allure-rapport från build $(Build.BuildId)"
+      git push origin gh-pages
