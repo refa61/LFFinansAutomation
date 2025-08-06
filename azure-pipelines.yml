@@ -7,9 +7,7 @@ pool:
 variables:
   buildConfiguration: 'Release'
   DOTNET_VERSION: '5.0.x'
-
-  # Grupp med GitHub-token (se till att gruppen är kopplad till pipen)
-- group: GITHUB_TOKEN
+  GITHUB_TOKEN: $(GITHUB_TOKEN)  # Importerat från Library -> Secrets
 
 steps:
   - task: UseDotNet@2
@@ -20,14 +18,13 @@ steps:
   - script: dotnet build TestAutomation.UnitTests/TestAutomation.UnitTests.csproj --configuration $(buildConfiguration)
     displayName: 'Bygg projektet'
 
-  - script: dotnet test TestAutomation.UnitTests/TestAutomation.UnitTests.csproj --logger:"trx" --results-directory:$(Build.ArtifactStagingDirectory)/TestResults --collect:"XPlat Code Coverage"
+  - script: dotnet test TestAutomation.UnitTests/TestAutomation.UnitTests.csproj --logger:"trx" --results-directory:$(Build.ArtifactStagingDirectory)\TestResults --collect:"XPlat Code Coverage"
     displayName: 'Kör tester'
 
   - task: PublishTestResults@2
-    displayName: 'Publicera testresultat'
     inputs:
       testResultsFormat: 'VSTest'
-      testResultsFiles: '$(Build.ArtifactStagingDirectory)/TestResults/*.trx'
+      testResultsFiles: '**/*.trx'
       mergeTestResults: true
       failTaskOnFailedTests: true
 
@@ -57,7 +54,7 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-        git config --global user.email "rezaac@hotmail.com"
+        git config --global user.email "rexaac@hotmail.com"
         git config --global user.name "refa61"
         git clone https://$(GITHUB_TOKEN)@github.com/refa61/LFFinansAutomation.git gh-pages-temp
         cd gh-pages-temp
