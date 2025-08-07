@@ -1,3 +1,27 @@
+# ==============================================
+# 💡 Trigger-inställningar – förklaring & test
+#
+# trigger:
+#   - master
+# => Kör pipelinen automatiskt vid push till master
+#
+# pr:
+#   - master
+# => Kör pipelinen när en Pull Request skapas/uppdateras mot master
+#
+# trigger:
+#   - master
+# pr:
+#   - master
+# => Kör pipelinen både vid push till master och vid PR till master
+#
+# trigger:
+#   - master
+#   - develop
+#   - feature/*
+# => Kör pipelinen vid push till master, develop och alla feature-grenar
+# ==============================================
+
 trigger:
   - master
 
