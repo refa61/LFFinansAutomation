@@ -1,0 +1,91 @@
+# ==============================================
+# 💡 Trigger-inställningar – förklaring & test
+#
+# trigger:
+#   - master
+# => Kör pipelinen automatiskt vid push till master
+#
+# pr:
+#   - master
+# => Kör pipelinen när en Pull Request skapas/uppdateras mot master
+#
+# trigger:
+#   - master
+# pr:
+#   - master
+# => Kör pipelinen både vid push till master och vid PR till master
+#
+# trigger:
+#   - master
+#   - develop
+#   - feature/*
+# => Kör pipelinen vid push till master, develop och alla feature-grenar
+# ==============================================
+
+trigger:
+  - master
+
+pool:
+  name: LocalAgentPool-LF Finans
+
+variables:
+  buildConfiguration: 'Release'
+
+steps:
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '5.0.x'
+
+- script: dotnet build TestAutomation.UnitTests/TestAutomation.UnitTests.csproj --configuration $(buildConfiguration)
+  displayName: 'Bygg projektet'
+
+- script: dotnet test TestAutomation.UnitTests/TestAutomation.UnitTests.csproj --logger:"trx"
+  displayName: 'Kör tester'
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'VSTest'
+    testResultsFiles: '**/*.trx'
+    mergeTestResults: true
+    failTaskOnFailedTests: true
+
+# 🧪 Visa innehåll i allure-results före rapportgenerering
+- task: PowerShell@2
+  displayName: 'Lista innehåll i allure-results'
+  inputs:
+    targetType: 'inline'
+    script: |
+      Write-Host "Innehåll i allure-results:"
+      Get-ChildItem -Path "$(System.DefaultWorkingDirectory)\TestAutomation.UnitTests\bin\$(buildConfiguration)\net5.0\allure-results" -Recurse
+
+- task: PowerShell@2
+  displayName: 'Installera Allure CLI'
+  inputs:
+    targetType: 'inline'
+    script: |
+      npm install -g allure-commandline
+
+- task: PowerShell@2
+  displayName: 'Generera Allure-rapport'
+  inputs:
+    targetType: 'inline'
+    script: |
+      $ErrorActionPreference = 'Stop'
+      allure generate "$(System.DefaultWorkingDirectory)\TestAutomation.UnitTests\bin\$(buildConfiguration)\net5.0\allure-results" --clean -o "$(Build.ArtifactStagingDirectory)\allure-report"
+
+# 🧪 Visa innehåll i allure-report innan publicering
+- task: PowerShell@2
+  displayName: 'Visa innehåll i allure-report'
+  inputs:
+    targetType: 'inline'
+    script: |
+      Write-Host "Innehåll i allure-report:"
+      Get-ChildItem -Path "$(Build.ArtifactStagingDirectory)\allure-report" -Recurse
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publicera Allure-rapport som artifact'
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)\allure-report'
+    ArtifactName: 'AllureReport'
+    publishLocation: 'Container'
