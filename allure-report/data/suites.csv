@@ -1,7 +1,0 @@
-"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
-"","13374","login","","Tue Jul 29 21:54:18 CEST 2025","passed","Tue Jul 29 21:54:32 CEST 2025","","Login","LoginTests","login"
-"","30","SetTitle_ShouldThrow_WhenEmptyString","","Tue Jul 29 21:53:43 CEST 2025","passed","Tue Jul 29 21:53:43 CEST 2025","Validation","Book","BookTests","SetTitle_ShouldThrow_WhenEmptyString"
-"","1","Test3","","Tue Jul 29 21:53:43 CEST 2025","passed","Tue Jul 29 21:53:43 CEST 2025","GetAuthor","Book","BookTests","Test3"
-"","7","Test2","","Tue Jul 29 21:53:43 CEST 2025","passed","Tue Jul 29 21:53:43 CEST 2025","GetPages","Book","BookTests","Test2"
-"","35210","ApplyForPrivatlan","","Tue Jul 29 21:53:43 CEST 2025","passed","Tue Jul 29 21:54:18 CEST 2025","","Privatlån","PrivatLanTest","ApplyForPrivatlan"
-"","2","Test1","","Tue Jul 29 21:53:43 CEST 2025","passed","Tue Jul 29 21:53:43 CEST 2025","GetTitle","Book","BookTests","Test1"

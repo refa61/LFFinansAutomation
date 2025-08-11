@@ -17,6 +17,8 @@ namespace TestAutomation.UnitTests.LanTest
     [AllureNUnit]
     [AllureSuite("Privatlån")]
     [AllureOwner("Alex")]
+
+//****************************************************************************************
     public class PrivatLanTest
     {
         private IWebDriver driver;
@@ -24,6 +26,7 @@ namespace TestAutomation.UnitTests.LanTest
         private PrivatLanPage privatLanPage;
         private WebDriverBase driverBase;
 
+//****************************************************************************************
         [SetUp]
         public void Setup()
         {
@@ -32,11 +35,13 @@ namespace TestAutomation.UnitTests.LanTest
             driver = new ChromeDriver(@"C:\Tools\Visual Studion\chromedriver-win64", options);
 
             driver.Manage().Window.Maximize();
+
             homePage = new HomePage(driver);
             driverBase = new WebDriverBase(driver);
         }
 
 
+//****************************************************************************************
         [Test]
         [AllureFeature("Ansök om Privatlån")]
         [AllureSeverity(SeverityLevel.critical)]
@@ -48,12 +53,13 @@ namespace TestAutomation.UnitTests.LanTest
             try
             {
                 homePage.OpenUrl();
-                Thread.Sleep(2000);
+                Thread.Sleep(4000);
                 homePage.AcceptCookies();
 
                 privatLanPage = new PrivatLanPage(driver);
                 privatLanPage.ClickLanpengarButton();
                 Thread.Sleep(3000);
+
                 privatLanPage.ClickPrivatLanButton();
                 Thread.Sleep(3000);
                 privatLanPage.AnsökPrivatlan();
@@ -88,6 +94,8 @@ namespace TestAutomation.UnitTests.LanTest
             }
         }
 
+
+//****************************************************************************************
         [TearDown]
         public void Teardown()
         {
